@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "mqtt": "^4.3.4",
+    "pino": "^7.6.5",
     "pulsar-client": "^1.5.0"
   },
   "jest": {
