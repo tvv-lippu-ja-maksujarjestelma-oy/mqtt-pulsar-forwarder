@@ -42,6 +42,7 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
+    "mqtt": "^4.3.4",
     "pulsar-client": "^1.5.0"
   },
   "jest": {
