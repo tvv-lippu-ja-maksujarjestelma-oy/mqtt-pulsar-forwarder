@@ -26,7 +26,7 @@ export interface Config {
 const getRequired = (logger: pino.Logger, envVariable: string) => {
   const variable = process.env[envVariable];
   if (typeof variable === "undefined") {
-    logger.fatal(`{envVariable} must be defined`);
+    logger.fatal(`${envVariable} must be defined`);
     process.exit(1);
   }
   return variable;
