@@ -35,12 +35,18 @@ const getRequired = (logger: pino.Logger, envVariable: string) => {
 const getOptional = (envVariable: string) => process.env[envVariable];
 
 const getOptionalBooleanWithDefault = (
+  logger: pino.Logger,
   envVariable: string,
   defaultValue: boolean
 ) => {
   let result = defaultValue;
-  const str = getOptional("PULSAR_BLOCK_IF_QUEUE_FULL");
+  const str = getOptional(envVariable);
   if (typeof str !== undefined) {
+    // Current tsc cannot infer that str cannot be undefined.
+    if (!["false", "true"].includes(str as string)) {
+      logger.fatal(`${envVariable} must be either "false" or "true"`);
+      process.exit(1);
+    }
     result = str === "true";
   }
   return result;
@@ -92,7 +98,7 @@ const getMqttConfig = (logger: pino.Logger) => {
   const clientId = createMqttClientId();
   const topicFilter = getRequired(logger, "MQTT_TOPIC_FILTER");
   const qos = getMqttQos(logger);
-  const clean = getOptionalBooleanWithDefault("MQTT_CLEAN", false);
+  const clean = getOptionalBooleanWithDefault(logger, "MQTT_CLEAN", false);
   return {
     url,
     topicFilter,
@@ -118,6 +124,7 @@ const getPulsarConfig = (logger: pino.Logger) => {
   const serviceUrl = getRequired(logger, "PULSAR_SERVICE_URL");
   const topic = getRequired(logger, "PULSAR_TOPIC");
   const blockIfQueueFull = getOptionalBooleanWithDefault(
+    logger,
     "PULSAR_BLOCK_IF_QUEUE_FULL",
     true
   );
