@@ -44,7 +44,7 @@
   "dependencies": {
     "mqtt": "^4.3.4",
     "pino": "^7.6.5",
-    "pulsar-client": "^1.5.0"
+    "pulsar-client": "https://github.com/apache/pulsar-client-node/tarball/f696d2fd958b702122ca7a21f84642ea855ec25d"
   },
   "jest": {
     "testPathIgnorePatterns": [
