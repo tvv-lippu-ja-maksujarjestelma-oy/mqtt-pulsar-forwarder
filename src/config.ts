@@ -12,8 +12,19 @@ export interface MqttConfig {
   subscribeOptions: mqtt.IClientSubscribeOptions;
 }
 
+export interface PulsarOauth2Config {
+  // pulsar-client requires "type" but that seems unnecessary
+  type: string;
+  issuer_url: string;
+  client_id?: string;
+  client_secret?: string;
+  private_key?: string;
+  audience?: string;
+  scope?: string;
+}
+
 export interface PulsarConfig {
-  authToken: string;
+  oauth2Config: PulsarOauth2Config;
   clientConfig: Pulsar.ClientConfig;
   producerConfig: Pulsar.ProducerConfig;
 }
@@ -118,13 +129,16 @@ const getMqttConfig = (logger: pino.Logger) => {
   };
 };
 
-const getPulsarAuthToken = (logger: pino.Logger) => {
-  const authTokenPath = getRequired(logger, "PULSAR_AUTH_TOKEN_PATH");
-  return fs.readFileSync(authTokenPath, "utf8");
-};
+const getPulsarOauth2Config = (logger: pino.Logger) => ({
+  // pulsar-client requires "type" but that seems unnecessary
+  type: "client_credentials",
+  issuer_url: getRequired(logger, "PULSAR_OAUTH2_ISSUER_URL"),
+  private_key: getRequired(logger, "PULSAR_OAUTH2_KEY_PATH"),
+  audience: getRequired(logger, "PULSAR_OAUTH2_AUDIENCE"),
+});
 
 const getPulsarConfig = (logger: pino.Logger) => {
-  const authToken = getPulsarAuthToken(logger);
+  const oauth2Config = getPulsarOauth2Config(logger);
   const serviceUrl = getRequired(logger, "PULSAR_SERVICE_URL");
   const topic = getRequired(logger, "PULSAR_TOPIC");
   const blockIfQueueFull = getOptionalBooleanWithDefault(
@@ -135,7 +149,7 @@ const getPulsarConfig = (logger: pino.Logger) => {
   const compressionType = (getOptional("PULSAR_COMPRESSION_TYPE") ||
     "ZSTD") as Pulsar.CompressionType;
   return {
-    authToken,
+    oauth2Config,
     clientConfig: {
       serviceUrl,
     },

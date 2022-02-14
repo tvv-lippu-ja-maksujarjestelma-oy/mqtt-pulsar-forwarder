@@ -4,10 +4,10 @@ import { PulsarConfig } from "./config";
 
 const createPulsarProducer = async (
   logger: pino.Logger,
-  { authToken, clientConfig, producerConfig }: PulsarConfig
+  { oauth2Config, clientConfig, producerConfig }: PulsarConfig
 ) => {
   logger.info("Connect to Pulsar");
-  const authentication = new Pulsar.AuthenticationToken({ token: authToken });
+  const authentication = new Pulsar.AuthenticationOauth2(oauth2Config);
   const client = new Pulsar.Client({ ...clientConfig, authentication });
   return client.createProducer(producerConfig);
 };
