@@ -11,11 +11,14 @@ const createMqttClient = (
   logger.info("Connect to MQTT broker");
   const mqttClient = mqtt.connect(url, clientOptions);
 
-  mqttClient.on("message", async (topic, message) => {
+  mqttClient.on("message", async (topic, message, packet) => {
     await pulsarProducer.send({
       data: message,
       properties: {
         mqttTopic: topic,
+        mqttQos: packet.qos.toFixed(0),
+        mqttIsRetained: packet.retain.toString(),
+        mqttIsDuplicate: packet.dup.toString(),
       },
       eventTimestamp: Date.now(),
     });
