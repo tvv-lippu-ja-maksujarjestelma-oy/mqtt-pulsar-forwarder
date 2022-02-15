@@ -52,10 +52,19 @@ RUN wget \
   "https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=pulsar/pulsar-${PULSAR_VERSION}/DEB/apache-pulsar-client-dev.deb.asc" \
   --output-document='./apache-pulsar-client-dev.deb.asc' \
   && gpg \
+  --batch \
   --keyserver hkps://keyserver.ubuntu.com \
   --recv-keys "${PULSAR_GPG_FINGERPRINT}" \
-  && gpg --verify ./apache-pulsar-client.deb.asc \
-  && gpg --verify ./apache-pulsar-client-dev.deb.asc
+  && gpg \
+  --batch \
+  --verify \
+  ./apache-pulsar-client.deb.asc \
+  ./apache-pulsar-client.deb \
+  && gpg \
+  --batch \
+  --verify \
+  ./apache-pulsar-client-dev.deb.asc \
+  ./apache-pulsar-client-dev.deb
 
 USER root
 RUN apt-get --assume-yes --quiet --no-install-recommends install \
