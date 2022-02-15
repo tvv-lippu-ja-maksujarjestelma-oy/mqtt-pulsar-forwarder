@@ -1,14 +1,6 @@
 {
+  "extends": "@tsconfig/strictest/tsconfig.json",
   "compilerOptions": {
-    "lib": ["es2021"],
-    "target": "es2021",
-    "module": "commonjs",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
     "outDir": "dist"
-  },
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Waltti APC"
+  }
 }
