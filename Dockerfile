@@ -120,6 +120,7 @@ RUN apt-get update \
   && apt-get upgrade -y \
   && apt-get -y --no-install-recommends install \
   'ca-certificates' \
+  'tini' \
   && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/lib/libpulsar.so* /usr/lib/
@@ -138,4 +139,5 @@ COPY \
   /home/node/app/node_modules \
   ./node_modules
 
+ENTRYPOINT ["/usr/bin/tini", "--", "docker-entrypoint.sh"]
 CMD ["node", "./dist/index.js"]
