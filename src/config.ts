@@ -85,8 +85,12 @@ const getMqttAuth = (logger: pino.Logger) => {
 const createMqttClientId = () => {
   const maxLength = 23;
   const prefix = "pulsar-forwarder-";
+  assert(prefix.length <= maxLength);
   const nSuffix = maxLength - prefix.length;
-  const suffix = crypto.randomBytes(16).toString("base64").slice(0, nSuffix);
+  const suffix = crypto
+    .randomBytes(maxLength)
+    .toString("base64")
+    .slice(0, nSuffix);
   const clientId = prefix + suffix;
   assert(clientId.length === maxLength);
   return clientId;
