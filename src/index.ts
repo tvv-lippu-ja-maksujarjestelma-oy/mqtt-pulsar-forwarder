@@ -4,7 +4,10 @@ import createPulsarProducer from "./pulsar";
 import createMqttClient from "./mqtt";
 
 (async () => {
-  const logger = pino({ name: "mqtt-pulsar-forwarder" });
+  const logger = pino({
+    name: "mqtt-pulsar-forwarder",
+    timestamp: pino.stdTimeFunctions.isoTime,
+  });
   logger.info("Read configuration");
   const config = getConfig(logger);
   logger.info("Create Pulsar producer");
