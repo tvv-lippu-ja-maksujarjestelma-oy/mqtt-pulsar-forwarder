@@ -11,6 +11,14 @@ const createMqttClient = (
   logger.info("Connect to MQTT broker");
   const mqttClient = mqtt.connect(url, clientOptions);
 
+  const logIntervalInSeconds = 60;
+  let nRecentPulsarMessages = 0;
+
+  setInterval(() => {
+    logger.info({ nRecentPulsarMessages }, "messages forwarded to Pulsar");
+    nRecentPulsarMessages = 0;
+  }, 1_000 * logIntervalInSeconds);
+
   mqttClient.on("message", (topic, message, packet) => {
     pulsarProducer
       .send({
@@ -24,7 +32,9 @@ const createMqttClient = (
         eventTimestamp: Date.now(),
       })
       .then(
-        () => {},
+        () => {
+          nRecentPulsarMessages += 1;
+        },
         (err) => {
           logger.error({ err }, "Publishing to Pulsar failed");
         }
