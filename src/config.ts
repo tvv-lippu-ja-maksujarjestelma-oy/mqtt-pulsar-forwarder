@@ -137,9 +137,38 @@ const getPulsarOauth2Config = (logger: pino.Logger) => ({
   audience: getRequired(logger, "PULSAR_OAUTH2_AUDIENCE"),
 });
 
+const matchPulsarLogLevelToPinoLevel = (
+  logger: pino.Logger,
+  logLevel: Pulsar.LogLevel
+): pino.LogFn => {
+  switch (logLevel) {
+    case Pulsar.LogLevel.DEBUG:
+      return logger.debug;
+    case Pulsar.LogLevel.INFO:
+      return logger.info;
+    case Pulsar.LogLevel.WARN:
+      return logger.warn;
+    case Pulsar.LogLevel.ERROR:
+      return logger.error;
+  }
+};
+
+const createPulsarLog =
+  (logger: pino.Logger) =>
+  (
+    level: Pulsar.LogLevel,
+    file: string,
+    line: number,
+    message: string
+  ): void => {
+    const logFunc = matchPulsarLogLevelToPinoLevel(logger, level);
+    logFunc({ file, line }, message);
+  };
+
 const getPulsarConfig = (logger: pino.Logger) => {
   const oauth2Config = getPulsarOauth2Config(logger);
   const serviceUrl = getRequired(logger, "PULSAR_SERVICE_URL");
+  const log = createPulsarLog(logger);
   const topic = getRequired(logger, "PULSAR_TOPIC");
   const blockIfQueueFull = getOptionalBooleanWithDefault(
     logger,
@@ -152,6 +181,7 @@ const getPulsarConfig = (logger: pino.Logger) => {
     oauth2Config,
     clientConfig: {
       serviceUrl,
+      log,
     },
     producerConfig: {
       topic,
