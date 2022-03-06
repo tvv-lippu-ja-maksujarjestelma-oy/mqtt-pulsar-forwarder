@@ -168,6 +168,11 @@ const createPulsarLog =
 const getPulsarConfig = (logger: pino.Logger) => {
   const oauth2Config = getPulsarOauth2Config(logger);
   const serviceUrl = getRequired(logger, "PULSAR_SERVICE_URL");
+  const tlsValidateHostname = getOptionalBooleanWithDefault(
+    logger,
+    "PULSAR_TLS_VALIDATE_HOSTNAME",
+    true
+  );
   const log = createPulsarLog(logger);
   const topic = getRequired(logger, "PULSAR_TOPIC");
   const blockIfQueueFull = getOptionalBooleanWithDefault(
@@ -181,6 +186,7 @@ const getPulsarConfig = (logger: pino.Logger) => {
     oauth2Config,
     clientConfig: {
       serviceUrl,
+      tlsValidateHostname,
       log,
     },
     producerConfig: {
