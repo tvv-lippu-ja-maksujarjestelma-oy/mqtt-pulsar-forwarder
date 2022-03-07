@@ -9,6 +9,9 @@ const createPulsarClientAndProducer = async (
   logger.info("Connect to Pulsar");
   const authentication = new Pulsar.AuthenticationOauth2(oauth2Config);
   const client = new Pulsar.Client({ ...clientConfig, authentication });
+  if (clientConfig.log) {
+    Pulsar.Client.setLogHandler(clientConfig.log);
+  }
   const producer = await client.createProducer(producerConfig);
   return { client, producer };
 };
