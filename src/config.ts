@@ -29,9 +29,14 @@ export interface PulsarConfig {
   producerConfig: Pulsar.ProducerConfig;
 }
 
+export interface HealthCheckConfig {
+  port: number;
+}
+
 export interface Config {
   mqtt: MqttConfig;
   pulsar: PulsarConfig;
+  healthCheck: HealthCheckConfig;
 }
 
 const getRequired = (envVariable: string) => {
@@ -211,7 +216,13 @@ const getPulsarConfig = (logger: pino.Logger) => {
   };
 };
 
+const getHealthCheckConfig = () => {
+  const port = parseInt(getOptional("HEALTH_CHECK_PORT") || "8080", 10);
+  return { port };
+};
+
 export const getConfig = (logger: pino.Logger): Config => ({
   mqtt: getMqttConfig(),
   pulsar: getPulsarConfig(logger),
+  healthCheck: getHealthCheckConfig(),
 });

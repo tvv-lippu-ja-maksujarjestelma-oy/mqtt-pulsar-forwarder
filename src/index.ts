@@ -2,6 +2,7 @@ import type { AsyncMqttClient } from "async-mqtt";
 import pino from "pino";
 import type Pulsar from "pulsar-client";
 import { getConfig } from "./config";
+import createHealthCheckServer from "./healthCheck";
 import createMqttClientAndUnsubscribe from "./mqtt";
 import createPulsarClientAndProducer from "./pulsar";
 import transformUnknownToError from "./util";
@@ -13,6 +14,7 @@ const exitGracefully = async (
   logger: pino.Logger,
   exitError: Error,
   exitCode: number,
+  setHealthOk?: (isOk: boolean) => void,
   mqttClient?: AsyncMqttClient,
   mqttUnsubscribe?: () => Promise<void>,
   pulsarClient?: Pulsar.Client,
@@ -21,6 +23,17 @@ const exitGracefully = async (
   logger.fatal(exitError);
   logger.info("Start exiting gracefully");
   process.exitCode = exitCode;
+  try {
+    if (setHealthOk) {
+      logger.info("Set health checks to fail");
+      setHealthOk(false);
+    }
+  } catch (err) {
+    logger.error(
+      { err },
+      "Something went wrong when setting health checks to fail"
+    );
+  }
   try {
     if (mqttUnsubscribe) {
       logger.info("Unsubscribe from MQTT topics");
@@ -66,6 +79,7 @@ const exitGracefully = async (
       timestamp: pino.stdTimeFunctions.isoTime,
     });
 
+    let setHealthOk: (isOk: boolean) => void;
     let pulsarClient: Pulsar.Client;
     let pulsarProducer: Pulsar.Producer;
     let mqttClient: AsyncMqttClient;
@@ -78,6 +92,7 @@ const exitGracefully = async (
         logger,
         exitError,
         exitCode,
+        setHealthOk,
         mqttClient,
         mqttUnsubscribe,
         pulsarClient,
@@ -99,6 +114,8 @@ const exitGracefully = async (
 
       logger.info("Read configuration");
       const config = getConfig(logger);
+      logger.info("Create health check server");
+      setHealthOk = createHealthCheckServer(config.healthCheck);
       logger.info("Create Pulsar producer");
       const pulsarClientAndProducer = await createPulsarClientAndProducer(
         logger,
@@ -114,6 +131,8 @@ const exitGracefully = async (
       );
       mqttClient = mqttClientAndUnsubscribe.client;
       mqttUnsubscribe = mqttClientAndUnsubscribe.unsubscribe;
+      logger.info("Set health check status as OK");
+      setHealthOk(true);
     } catch (err) {
       exitHandler(transformUnknownToError(err), 1);
     }
