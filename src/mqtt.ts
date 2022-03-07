@@ -1,15 +1,16 @@
-import mqtt from "mqtt";
-import pino from "pino";
-import Pulsar from "pulsar-client";
-import { MqttConfig } from "./config";
+import mqtt from "async-mqtt";
+import type pino from "pino";
+import type Pulsar from "pulsar-client";
+import type { MqttConfig } from "./config";
+import transformUnknownToError from "./util";
 
-const createMqttClient = (
+const createMqttClientAndUnsubscribe = async (
   logger: pino.Logger,
   { url, topicFilter, clientOptions, subscribeOptions }: MqttConfig,
   pulsarProducer: Pulsar.Producer
 ) => {
   logger.info("Connect to MQTT broker");
-  const mqttClient = mqtt.connect(url, clientOptions);
+  const client = await mqtt.connectAsync(url, clientOptions);
 
   const logIntervalInSeconds = 60;
   let nRecentPulsarMessages = 0;
@@ -19,7 +20,8 @@ const createMqttClient = (
     nRecentPulsarMessages = 0;
   }, 1_000 * logIntervalInSeconds);
 
-  mqttClient.on("message", (topic, message, packet) => {
+  // async-mqtt uses non-async callbacks for receiving messages.
+  client.on("message", (topic, message, packet) => {
     pulsarProducer
       .send({
         data: message,
@@ -36,21 +38,33 @@ const createMqttClient = (
           nRecentPulsarMessages += 1;
         },
         (err) => {
-          logger.error({ err }, "Publishing to Pulsar failed");
+          const error = transformUnknownToError(err);
+          logger.fatal({ error }, "Publishing to Pulsar failed");
+          // Aim to exit.
+          throw error;
         }
       );
   });
 
-  mqttClient.on("connect", () => {
-    logger.info("Subscribe to MQTT topics");
-    mqttClient.subscribe(topicFilter, subscribeOptions, (err) => {
-      if (err) {
-        logger.error({ err }, "Subscribing to MQTT topics failed");
-      }
-    });
-  });
+  logger.info("Subscribe to MQTT topics");
+  try {
+    await client.subscribe(topicFilter, subscribeOptions);
+  } catch (err) {
+    logger.fatal({ err }, "Subscribing to MQTT topics failed");
+    // Aim to exit.
+    throw err;
+  }
 
-  return mqttClient;
+  const unsubscribe = async () => {
+    try {
+      return await client.unsubscribe(topicFilter);
+    } catch (err) {
+      // Aim to exit.
+      throw transformUnknownToError(err);
+    }
+  };
+
+  return { client, unsubscribe };
 };
 
-export default createMqttClient;
+export default createMqttClientAndUnsubscribe;

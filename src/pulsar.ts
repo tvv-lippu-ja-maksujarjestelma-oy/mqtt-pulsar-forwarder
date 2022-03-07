@@ -1,15 +1,16 @@
-import pino from "pino";
+import type pino from "pino";
 import Pulsar from "pulsar-client";
-import { PulsarConfig } from "./config";
+import type { PulsarConfig } from "./config";
 
-const createPulsarProducer = async (
+const createPulsarClientAndProducer = async (
   logger: pino.Logger,
   { oauth2Config, clientConfig, producerConfig }: PulsarConfig
 ) => {
   logger.info("Connect to Pulsar");
   const authentication = new Pulsar.AuthenticationOauth2(oauth2Config);
   const client = new Pulsar.Client({ ...clientConfig, authentication });
-  return client.createProducer(producerConfig);
+  const producer = await client.createProducer(producerConfig);
+  return { client, producer };
 };
 
-export default createPulsarProducer;
+export default createPulsarClientAndProducer;
