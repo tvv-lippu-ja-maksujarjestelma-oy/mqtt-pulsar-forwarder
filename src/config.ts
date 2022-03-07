@@ -136,26 +136,6 @@ const getPulsarOauth2Config = () => ({
   audience: getRequired("PULSAR_OAUTH2_AUDIENCE"),
 });
 
-const matchPulsarLogLevelToPinoLevel = (
-  logger: pino.Logger,
-  logLevel: Pulsar.LogLevel
-  // tsc handles exhaustiveness:
-  // eslint-disable-next-line consistent-return
-): pino.LogFn => {
-  // tsc handles exhaustiveness:
-  // eslint-disable-next-line default-case
-  switch (logLevel) {
-    case Pulsar.LogLevel.DEBUG:
-      return logger.debug;
-    case Pulsar.LogLevel.INFO:
-      return logger.info;
-    case Pulsar.LogLevel.WARN:
-      return logger.warn;
-    case Pulsar.LogLevel.ERROR:
-      return logger.error;
-  }
-};
-
 const createPulsarLog =
   (logger: pino.Logger) =>
   (
@@ -164,8 +144,24 @@ const createPulsarLog =
     line: number,
     message: string
   ): void => {
-    const logFunc = matchPulsarLogLevelToPinoLevel(logger, level);
-    logFunc({ file, line }, message);
+    switch (level) {
+      case Pulsar.LogLevel.DEBUG:
+        logger.debug({ file, line }, message);
+        break;
+      case Pulsar.LogLevel.INFO:
+        logger.info({ file, line }, message);
+        break;
+      case Pulsar.LogLevel.WARN:
+        logger.warn({ file, line }, message);
+        break;
+      case Pulsar.LogLevel.ERROR:
+        logger.error({ file, line }, message);
+        break;
+      default: {
+        const exhaustiveCheck: never = level;
+        throw new Error(String(exhaustiveCheck));
+      }
+    }
   };
 
 const getPulsarCompressionType = (): Pulsar.CompressionType => {
