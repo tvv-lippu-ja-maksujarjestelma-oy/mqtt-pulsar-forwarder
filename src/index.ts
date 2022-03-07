@@ -4,7 +4,7 @@ import type Pulsar from "pulsar-client";
 import { getConfig } from "./config";
 import createHealthCheckServer from "./healthCheck";
 import createMqttClientAndUnsubscribe from "./mqtt";
-import createPulsarClientAndProducer from "./pulsar";
+import { createPulsarClient, createPulsarProducer } from "./pulsar";
 import transformUnknownToError from "./util";
 
 /**
@@ -116,13 +116,10 @@ const exitGracefully = async (
       const config = getConfig(logger);
       logger.info("Create health check server");
       setHealthOk = createHealthCheckServer(config.healthCheck);
+      logger.info("Create Pulsar client");
+      pulsarClient = createPulsarClient(config.pulsar);
       logger.info("Create Pulsar producer");
-      const pulsarClientAndProducer = await createPulsarClientAndProducer(
-        logger,
-        config.pulsar
-      );
-      pulsarClient = pulsarClientAndProducer.client;
-      pulsarProducer = pulsarClientAndProducer.producer;
+      pulsarProducer = await createPulsarProducer(pulsarClient, config.pulsar);
       logger.info("Start MQTT subscriber");
       const mqttClientAndUnsubscribe = await createMqttClientAndUnsubscribe(
         logger,
