@@ -55,9 +55,8 @@ const getOptionalBooleanWithDefault = (
 ) => {
   let result = defaultValue;
   const str = getOptional(envVariable);
-  if (typeof str !== undefined) {
-    // Current tsc cannot infer that str cannot be undefined.
-    if (!["false", "true"].includes(str as string)) {
+  if (typeof str !== "undefined") {
+    if (!["false", "true"].includes(str)) {
       throw new Error(`${envVariable} must be either "false" or "true"`);
     }
     result = str === "true";
