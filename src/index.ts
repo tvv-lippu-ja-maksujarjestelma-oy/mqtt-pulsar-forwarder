@@ -160,7 +160,7 @@ const exitGracefully = async (
       );
       mqttClient = mqttClientAndUnsubscribe.client;
       mqttUnsubscribe = mqttClientAndUnsubscribe.unsubscribe;
-      logger.info("Set health check status as OK");
+      logger.info("Set health check status to OK");
       setHealthOk(true);
     } catch (err) {
       exitHandler(1, transformUnknownToError(err));
