@@ -1,4 +1,4 @@
-import type { AsyncMqttClient } from "async-mqtt";
+import type mqtt from "async-mqtt";
 import pino from "pino";
 import type Pulsar from "pulsar-client";
 import { getConfig } from "./config";
@@ -15,7 +15,7 @@ const exitGracefully = async (
   exitError: Error,
   exitCode: number,
   setHealthOk?: (isOk: boolean) => void,
-  mqttClient?: AsyncMqttClient,
+  mqttClient?: mqtt.AsyncMqttClient,
   mqttUnsubscribe?: () => Promise<void>,
   pulsarClient?: Pulsar.Client,
   pulsarProducer?: Pulsar.Producer
@@ -82,7 +82,7 @@ const exitGracefully = async (
     let setHealthOk: (isOk: boolean) => void;
     let pulsarClient: Pulsar.Client;
     let pulsarProducer: Pulsar.Producer;
-    let mqttClient: AsyncMqttClient;
+    let mqttClient: mqtt.AsyncMqttClient;
     let mqttUnsubscribe: () => Promise<void>;
 
     const exitHandler = (exitError: Error, exitCode: number) => {

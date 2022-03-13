@@ -1,4 +1,4 @@
-import { assert } from "console";
+import console from "console";
 import crypto from "crypto";
 import fs from "fs";
 import type mqtt from "mqtt";
@@ -96,14 +96,14 @@ const getMqttAuth = () => {
 const createMqttClientId = () => {
   const maxLength = 23;
   const prefix = "pulsar-forwarder-";
-  assert(prefix.length <= maxLength);
+  console.assert(prefix.length <= maxLength);
   const nSuffix = maxLength - prefix.length;
   const suffix = crypto
     .randomBytes(maxLength)
     .toString("base64")
     .slice(0, nSuffix);
   const clientId = prefix + suffix;
-  assert(clientId.length === maxLength);
+  console.assert(clientId.length === maxLength);
   return clientId;
 };
 
