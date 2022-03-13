@@ -37,9 +37,9 @@ const createMqttClientAndUnsubscribe = async (
         () => {
           nRecentPulsarMessages += 1;
         },
-        (err) => {
-          const error = transformUnknownToError(err);
-          logger.fatal({ error }, "Publishing to Pulsar failed");
+        (error) => {
+          const err = transformUnknownToError(error);
+          logger.fatal({ err }, "Publishing to Pulsar failed");
           // Aim to exit.
           throw error;
         }
