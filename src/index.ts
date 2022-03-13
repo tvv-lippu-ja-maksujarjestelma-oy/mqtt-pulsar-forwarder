@@ -12,15 +12,18 @@ import transformUnknownToError from "./util";
  */
 const exitGracefully = async (
   logger: pino.Logger,
-  exitError: Error,
   exitCode: number,
+  exitError?: Error,
   setHealthOk?: (isOk: boolean) => void,
+  closeHealthCheckServer?: () => Promise<void>,
   mqttClient?: mqtt.AsyncMqttClient,
   mqttUnsubscribe?: () => Promise<void>,
   pulsarClient?: Pulsar.Client,
   pulsarProducer?: Pulsar.Producer
 ) => {
-  logger.fatal(exitError);
+  if (exitError) {
+    logger.fatal(exitError);
+  }
   logger.info("Start exiting gracefully");
   process.exitCode = exitCode;
   try {
@@ -39,28 +42,53 @@ const exitGracefully = async (
       logger.info("Unsubscribe from MQTT topics");
       await mqttUnsubscribe();
     }
+  } catch (err) {
+    logger.error({ err }, "Something went unsubscribing from MQTT topics");
+  }
+  try {
     if (mqttClient) {
       logger.info("Disconnect from MQTT broker");
       await mqttClient.end();
     }
   } catch (err) {
-    logger.error({ err }, "Something went wrong when closing MQTT client");
+    logger.error(
+      { err },
+      "Something went wrong when disconnecting MQTT client"
+    );
   }
   try {
     if (pulsarProducer) {
       logger.info("Flush Pulsar producer");
       await pulsarProducer.flush();
+    }
+  } catch (err) {
+    logger.error({ err }, "Something went wrong when flushing Pulsar client");
+  }
+  try {
+    if (pulsarProducer) {
       logger.info("Close Pulsar producer");
       await pulsarProducer.close();
     }
+  } catch (err) {
+    logger.error({ err }, "Something went wrong when closing Pulsar producer");
+  }
+  try {
     if (pulsarClient) {
       logger.info("Close Pulsar client");
       await pulsarClient.close();
     }
   } catch (err) {
+    logger.error({ err }, "Something went wrong when closing Pulsar client");
+  }
+  try {
+    if (closeHealthCheckServer) {
+      logger.info("Close health check server");
+      await closeHealthCheckServer();
+    }
+  } catch (err) {
     logger.error(
       { err },
-      "Something went wrong when closing the Pulsar client"
+      "Something went wrong when closing health check server"
     );
   }
   logger.info("Exit process");
@@ -80,19 +108,21 @@ const exitGracefully = async (
     });
 
     let setHealthOk: (isOk: boolean) => void;
+    let closeHealthCheckServer: () => Promise<void>;
     let pulsarClient: Pulsar.Client;
     let pulsarProducer: Pulsar.Producer;
     let mqttClient: mqtt.AsyncMqttClient;
     let mqttUnsubscribe: () => Promise<void>;
 
-    const exitHandler = (exitError: Error, exitCode: number) => {
+    const exitHandler = (exitCode: number, exitError?: Error) => {
       // Exit next.
       /* eslint-disable @typescript-eslint/no-floating-promises */
       exitGracefully(
         logger,
-        exitError,
         exitCode,
+        exitError,
         setHealthOk,
+        closeHealthCheckServer,
         mqttClient,
         mqttUnsubscribe,
         pulsarClient,
@@ -103,19 +133,21 @@ const exitGracefully = async (
 
     try {
       // Handle different kinds of exits.
-      process.on("beforeExit", () => exitHandler(new Error("beforeExit"), 1));
+      process.on("beforeExit", () => exitHandler(1, new Error("beforeExit")));
       process.on("unhandledRejection", (reason) =>
-        exitHandler(transformUnknownToError(reason), 1)
+        exitHandler(1, transformUnknownToError(reason))
       );
-      process.on("uncaughtException", (err) => exitHandler(err, 1));
-      process.on("SIGINT", (signal) => exitHandler(new Error(signal), 130));
-      process.on("SIGQUIT", (signal) => exitHandler(new Error(signal), 131));
-      process.on("SIGTERM", (signal) => exitHandler(new Error(signal), 143));
+      process.on("uncaughtException", (err) => exitHandler(1, err));
+      process.on("SIGINT", (signal) => exitHandler(130, new Error(signal)));
+      process.on("SIGQUIT", (signal) => exitHandler(131, new Error(signal)));
+      process.on("SIGTERM", (signal) => exitHandler(143, new Error(signal)));
 
       logger.info("Read configuration");
       const config = getConfig(logger);
       logger.info("Create health check server");
-      setHealthOk = createHealthCheckServer(config.healthCheck);
+      ({ closeHealthCheckServer, setHealthOk } = createHealthCheckServer(
+        config.healthCheck
+      ));
       logger.info("Create Pulsar client");
       pulsarClient = createPulsarClient(config.pulsar);
       logger.info("Create Pulsar producer");
@@ -131,10 +163,11 @@ const exitGracefully = async (
       logger.info("Set health check status as OK");
       setHealthOk(true);
     } catch (err) {
-      exitHandler(transformUnknownToError(err), 1);
+      exitHandler(1, transformUnknownToError(err));
     }
   } catch (loggerErr) {
-    console.error("Failed to start logging:", loggerErr); // eslint-disable-line no-console
+    // eslint-disable-next-line no-console
+    console.error("Failed to start logging:", loggerErr);
     process.exit(1); // eslint-disable-line no-process-exit
   }
 })();

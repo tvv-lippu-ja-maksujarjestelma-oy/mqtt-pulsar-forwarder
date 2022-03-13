@@ -1,4 +1,5 @@
 import http from "http";
+import util from "util";
 import type { HealthCheckConfig } from "./config";
 
 const createHealthCheckServer = ({ port }: HealthCheckConfig) => {
@@ -19,7 +20,8 @@ const createHealthCheckServer = ({ port }: HealthCheckConfig) => {
   const setHealthOk = (isOk: boolean) => {
     isHealthOk = isOk;
   };
-  return setHealthOk;
+  const closeHealthCheckServer = util.promisify(server.close.bind(server));
+  return { closeHealthCheckServer, setHealthOk };
 };
 
 export default createHealthCheckServer;
