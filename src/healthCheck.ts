@@ -4,7 +4,7 @@ import type { HealthCheckConfig } from "./config";
 
 const createHealthCheckServer = ({ port }: HealthCheckConfig) => {
   let isHealthOk = false;
-  const server = http.createServer((req, res) => {
+  let server: http.Server | undefined = http.createServer((req, res) => {
     if (req.url === "/healthz") {
       if (isHealthOk) {
         res.writeHead(204);
@@ -20,7 +20,12 @@ const createHealthCheckServer = ({ port }: HealthCheckConfig) => {
   const setHealthOk = (isOk: boolean) => {
     isHealthOk = isOk;
   };
-  const closeHealthCheckServer = util.promisify(server.close.bind(server));
+  const closeHealthCheckServer = async () => {
+    if (server && server.listening) {
+      await util.promisify(server.close.bind(server))();
+      server = undefined;
+    }
+  };
   return { closeHealthCheckServer, setHealthOk };
 };
 
