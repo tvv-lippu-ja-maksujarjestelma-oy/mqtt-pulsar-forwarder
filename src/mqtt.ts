@@ -20,7 +20,7 @@ const createMqttClientAndUnsubscribe = async (
     nRecentPulsarMessages = 0;
   }, 1_000 * logIntervalInSeconds);
 
-  // async-mqtt uses non-async callbacks for receiving messages.
+  // async-mqtt accepts only sync callbacks for receiving messages.
   client.on("message", (topic, message, packet) => {
     pulsarProducer
       .send({
