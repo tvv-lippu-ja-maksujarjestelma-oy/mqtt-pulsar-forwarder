@@ -62,7 +62,7 @@ const exitGracefully = async (
       await pulsarProducer.flush();
     }
   } catch (err) {
-    logger.error({ err }, "Something went wrong when flushing Pulsar client");
+    logger.error({ err }, "Something went wrong when flushing Pulsar producer");
   }
   try {
     if (pulsarProducer) {
