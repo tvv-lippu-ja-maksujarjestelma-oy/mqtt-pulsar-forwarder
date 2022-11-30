@@ -41,7 +41,7 @@ export interface Config {
 
 const getRequired = (envVariable: string) => {
   const variable = process.env[envVariable];
-  if (typeof variable === "undefined") {
+  if (variable === undefined) {
     throw new Error(`${envVariable} must be defined`);
   }
   return variable;
@@ -55,7 +55,7 @@ const getOptionalBooleanWithDefault = (
 ) => {
   let result = defaultValue;
   const str = getOptional(envVariable);
-  if (typeof str !== "undefined") {
+  if (str !== undefined) {
     if (!["false", "true"].includes(str)) {
       throw new Error(`${envVariable} must be either "false" or "true"`);
     }
@@ -76,8 +76,8 @@ const getMqttAuth = () => {
   let result;
   const usernamePath = process.env["MQTT_USERNAME_PATH"];
   const passwordPath = process.env["MQTT_PASSWORD_PATH"];
-  const isUsernamePath = typeof usernamePath !== "undefined";
-  const isPasswordPath = typeof passwordPath !== "undefined";
+  const isUsernamePath = usernamePath !== undefined;
+  const isPasswordPath = passwordPath !== undefined;
   if (isUsernamePath !== isPasswordPath) {
     throw new Error(
       "Either both or neither of MQTT_USERNAME_PATH and MQTT_PASSWORD_PATH " +
