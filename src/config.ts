@@ -65,7 +65,7 @@ const getOptionalBooleanWithDefault = (
 };
 
 const getMqttQos = (): mqtt.QoS => {
-  const qos = parseInt(process.env["MQTT_QOS"] || "2", 10);
+  const qos = parseInt(process.env["MQTT_QOS"] ?? "2", 10);
   if (qos !== 0 && qos !== 1 && qos !== 2) {
     throw new Error("If defined, MQTT_QOS must be 0, 1 or 2. Default is 2.");
   }
@@ -165,7 +165,7 @@ const createPulsarLog =
   };
 
 const getPulsarCompressionType = (): Pulsar.CompressionType => {
-  const compressionType = getOptional("PULSAR_COMPRESSION_TYPE") || "ZSTD";
+  const compressionType = getOptional("PULSAR_COMPRESSION_TYPE") ?? "ZSTD";
   // tsc does not understand:
   // if (!["Zlib", "LZ4", "ZSTD", "SNAPPY"].includes(compressionType)) {
   if (
@@ -212,7 +212,7 @@ const getPulsarConfig = (logger: pino.Logger) => {
 };
 
 const getHealthCheckConfig = () => {
-  const port = parseInt(getOptional("HEALTH_CHECK_PORT") || "8080", 10);
+  const port = parseInt(getOptional("HEALTH_CHECK_PORT") ?? "8080", 10);
   return { port };
 };
 
