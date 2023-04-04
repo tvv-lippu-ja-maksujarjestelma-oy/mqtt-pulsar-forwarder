@@ -19,15 +19,13 @@ jobs:
 
       - name: Build an image from Dockerfile
         run: |
-          docker build -t ${{ IMAGE_NAME }}:${{ github.sha }} .
+          docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "tvvlmj/mqtt-pulsar-forwarder:${{ github.sha }}"
+          image-ref: "${{ env.IMAGE_NAME }}:${{ github.sha }}"
           format: "sarif"
-          vuln-type: "os,library"
-          severity: "CRITICAL,HIGH"
           output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
