@@ -1,7 +1,7 @@
 ---
 name: "CI/CD: Continuous integration and continuous deployment"
 
-"on":
+on:
   push:
     branches:
       - main
