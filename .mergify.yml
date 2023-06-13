@@ -2,7 +2,7 @@
 queue_rules:
   - name: dependabot
     conditions:
-      - "check-success=CI/CD: Continuous integration and continuous deployment / Build, check, test, push"
+      - check-success=Build, check, test, push
       - check-success=CodeQL
     batch_size: 10
     batch_max_wait_time: 5min
