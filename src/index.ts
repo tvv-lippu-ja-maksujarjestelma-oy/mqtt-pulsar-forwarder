@@ -106,6 +106,7 @@ const exitGracefully = async (
     const logger = pino({
       name: serviceName,
       timestamp: pino.stdTimeFunctions.isoTime,
+      redact: { paths: ["pid"], remove: true },
     });
 
     let setHealthOk: (isOk: boolean) => void;
