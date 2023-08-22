@@ -103,11 +103,17 @@ const exitGracefully = async (
   /* eslint-enable @typescript-eslint/no-floating-promises */
   const serviceName = "mqtt-pulsar-forwarder";
   try {
-    const logger = pino({
-      name: serviceName,
-      timestamp: pino.stdTimeFunctions.isoTime,
-      redact: { paths: ["pid"], remove: true },
-    });
+    const logger = pino(
+      {
+        name: serviceName,
+        timestamp: pino.stdTimeFunctions.isoTime,
+        redact: { paths: ["pid"], remove: true },
+        // As logger is started before config is created, read the level from
+        // env.
+        level: process.env["PINO_LOG_LEVEL"] ?? "info",
+      },
+      pino.destination({ sync: true })
+    );
 
     let setHealthOk: (isOk: boolean) => void;
     let closeHealthCheckServer: () => Promise<void>;
