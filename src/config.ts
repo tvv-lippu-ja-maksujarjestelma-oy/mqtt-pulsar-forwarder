@@ -128,7 +128,7 @@ const getMqttConfig = (): MqttConfig => {
   const clientId = createMqttClientId();
   const topicFilter = getRequired("MQTT_TOPIC_FILTER");
   const qos = getMqttQos();
-  const clean = getOptionalBooleanWithDefault("MQTT_CLEAN", false);
+  const clean = getOptionalBooleanWithDefault("MQTT_CLEAN_SESSION", false);
   return {
     url,
     topicFilter,
