@@ -1,4 +1,3 @@
-import console from "console";
 import crypto from "crypto";
 import fs from "fs";
 import type mqtt from "mqtt";
@@ -49,6 +48,23 @@ const getRequired = (envVariable: string) => {
 
 const getOptional = (envVariable: string) => process.env[envVariable];
 
+const getOptionalNonNegativeInteger = (
+  envVariable: string
+): number | undefined => {
+  let result;
+  const str = getOptional(envVariable);
+  if (str !== undefined) {
+    const num = parseInt(str, 10);
+    if (Number.isNaN(num) || num < 0) {
+      throw new Error(
+        `If defined, ${envVariable} must be a non-negative integer.`
+      );
+    }
+    result = num;
+  }
+  return result;
+};
+
 const getOptionalBooleanWithDefault = (
   envVariable: string,
   defaultValue: boolean
@@ -94,16 +110,15 @@ const getMqttAuth = () => {
 };
 
 const createMqttClientId = () => {
-  const maxLength = 23;
-  const prefix = "pulsar-forwarder-";
-  console.assert(prefix.length <= maxLength);
-  const nSuffix = maxLength - prefix.length;
+  const prefix = getRequired("MQTT_CLIENT_ID_PREFIX");
+  const suffixLength =
+    getOptionalNonNegativeInteger("MQTT_CLIENT_ID_SUFFIX_LENGTH") ?? 0;
+  // n random bytes will always result in at least n characters.
   const suffix = crypto
-    .randomBytes(maxLength)
+    .randomBytes(suffixLength)
     .toString("base64")
-    .slice(0, nSuffix);
+    .slice(0, suffixLength);
   const clientId = prefix + suffix;
-  console.assert(clientId.length === maxLength);
   return clientId;
 };
 
@@ -113,7 +128,7 @@ const getMqttConfig = (): MqttConfig => {
   const clientId = createMqttClientId();
   const topicFilter = getRequired("MQTT_TOPIC_FILTER");
   const qos = getMqttQos();
-  const clean = getOptionalBooleanWithDefault("MQTT_CLEAN", false);
+  const clean = getOptionalBooleanWithDefault("MQTT_CLEAN_SESSION", false);
   return {
     url,
     topicFilter,
