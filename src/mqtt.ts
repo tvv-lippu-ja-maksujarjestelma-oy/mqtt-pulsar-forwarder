@@ -7,7 +7,7 @@ import transformUnknownToError from "./util";
 const createMqttClientAndUnsubscribe = async (
   logger: pino.Logger,
   { url, topicFilter, clientOptions, subscribeOptions }: MqttConfig,
-  pulsarProducer: Pulsar.Producer
+  pulsarProducer: Pulsar.Producer,
 ) => {
   logger.info("Connect to MQTT broker");
   const client = await mqtt.connectAsync(url, clientOptions);
@@ -42,7 +42,7 @@ const createMqttClientAndUnsubscribe = async (
           logger.fatal({ err }, "Publishing to Pulsar failed");
           // Aim to exit.
           throw error;
-        }
+        },
       );
   });
 

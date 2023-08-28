@@ -49,7 +49,7 @@ const getRequired = (envVariable: string) => {
 const getOptional = (envVariable: string) => process.env[envVariable];
 
 const getOptionalNonNegativeInteger = (
-  envVariable: string
+  envVariable: string,
 ): number | undefined => {
   let result;
   const str = getOptional(envVariable);
@@ -57,7 +57,7 @@ const getOptionalNonNegativeInteger = (
     const num = parseInt(str, 10);
     if (Number.isNaN(num) || num < 0) {
       throw new Error(
-        `If defined, ${envVariable} must be a non-negative integer.`
+        `If defined, ${envVariable} must be a non-negative integer.`,
       );
     }
     result = num;
@@ -67,7 +67,7 @@ const getOptionalNonNegativeInteger = (
 
 const getOptionalBooleanWithDefault = (
   envVariable: string,
-  defaultValue: boolean
+  defaultValue: boolean,
 ) => {
   let result = defaultValue;
   const str = getOptional(envVariable);
@@ -97,7 +97,7 @@ const getMqttAuth = () => {
   if (isUsernamePath !== isPasswordPath) {
     throw new Error(
       "Either both or neither of MQTT_USERNAME_PATH and MQTT_PASSWORD_PATH " +
-        "must be defined"
+        "must be defined",
     );
   }
   if (isUsernamePath && isPasswordPath) {
@@ -157,7 +157,7 @@ const createPulsarLog =
     level: Pulsar.LogLevel,
     file: string,
     line: number,
-    message: string
+    message: string,
   ): void => {
     switch (level) {
       case Pulsar.LogLevel.DEBUG:
@@ -191,7 +191,7 @@ const getPulsarCompressionType = (): Pulsar.CompressionType => {
   ) {
     throw new Error(
       "If defined, PULSAR_COMPRESSION_TYPE must be one of 'Zlib', 'LZ4', " +
-        "'ZSTD' or 'SNAPPY'. Default is 'ZSTD'."
+        "'ZSTD' or 'SNAPPY'. Default is 'ZSTD'.",
     );
   }
   return compressionType;
@@ -202,13 +202,13 @@ const getPulsarConfig = (logger: pino.Logger) => {
   const serviceUrl = getRequired("PULSAR_SERVICE_URL");
   const tlsValidateHostname = getOptionalBooleanWithDefault(
     "PULSAR_TLS_VALIDATE_HOSTNAME",
-    true
+    true,
   );
   const log = createPulsarLog(logger);
   const topic = getRequired("PULSAR_TOPIC");
   const blockIfQueueFull = getOptionalBooleanWithDefault(
     "PULSAR_BLOCK_IF_QUEUE_FULL",
-    true
+    true,
   );
   const compressionType = getPulsarCompressionType();
   return {

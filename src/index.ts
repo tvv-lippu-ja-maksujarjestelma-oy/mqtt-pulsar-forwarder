@@ -19,7 +19,7 @@ const exitGracefully = async (
   mqttClient?: mqtt.AsyncMqttClient,
   mqttUnsubscribe?: () => Promise<void>,
   pulsarClient?: Pulsar.Client,
-  pulsarProducer?: Pulsar.Producer
+  pulsarProducer?: Pulsar.Producer,
 ) => {
   if (exitError) {
     logger.fatal(exitError);
@@ -34,7 +34,7 @@ const exitGracefully = async (
   } catch (err) {
     logger.error(
       { err },
-      "Something went wrong when setting health checks to fail"
+      "Something went wrong when setting health checks to fail",
     );
   }
   try {
@@ -53,7 +53,7 @@ const exitGracefully = async (
   } catch (err) {
     logger.error(
       { err },
-      "Something went wrong when disconnecting MQTT client"
+      "Something went wrong when disconnecting MQTT client",
     );
   }
   try {
@@ -88,7 +88,7 @@ const exitGracefully = async (
   } catch (err) {
     logger.error(
       { err },
-      "Something went wrong when closing health check server"
+      "Something went wrong when closing health check server",
     );
   }
   logger.info("Exit process");
@@ -112,7 +112,7 @@ const exitGracefully = async (
         // env.
         level: process.env["PINO_LOG_LEVEL"] ?? "info",
       },
-      pino.destination({ sync: true })
+      pino.destination({ sync: true }),
     );
 
     let setHealthOk: (isOk: boolean) => void;
@@ -134,7 +134,7 @@ const exitGracefully = async (
         mqttClient,
         mqttUnsubscribe,
         pulsarClient,
-        pulsarProducer
+        pulsarProducer,
       );
       /* eslint-enable @typescript-eslint/no-floating-promises */
     };
@@ -143,7 +143,7 @@ const exitGracefully = async (
       // Handle different kinds of exits.
       process.on("beforeExit", () => exitHandler(1, new Error("beforeExit")));
       process.on("unhandledRejection", (reason) =>
-        exitHandler(1, transformUnknownToError(reason))
+        exitHandler(1, transformUnknownToError(reason)),
       );
       process.on("uncaughtException", (err) => exitHandler(1, err));
       process.on("SIGINT", (signal) => exitHandler(130, new Error(signal)));
@@ -155,7 +155,7 @@ const exitGracefully = async (
       const config = getConfig(logger);
       logger.info("Create health check server");
       ({ closeHealthCheckServer, setHealthOk } = createHealthCheckServer(
-        config.healthCheck
+        config.healthCheck,
       ));
       logger.info("Create Pulsar client");
       pulsarClient = createPulsarClient(config.pulsar);
@@ -165,7 +165,7 @@ const exitGracefully = async (
       const mqttClientAndUnsubscribe = await createMqttClientAndUnsubscribe(
         logger,
         config.mqtt,
-        pulsarProducer
+        pulsarProducer,
       );
       mqttClient = mqttClientAndUnsubscribe.client;
       mqttUnsubscribe = mqttClientAndUnsubscribe.unsubscribe;
