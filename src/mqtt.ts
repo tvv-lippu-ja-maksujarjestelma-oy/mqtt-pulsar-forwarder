@@ -31,7 +31,7 @@ const createMqttClientAndUnsubscribe = async (
           mqttIsRetained: packet.retain.toString(),
           mqttIsDuplicate: packet.dup.toString(),
         },
-        eventTimestamp: Date.now() / 1e3,
+        eventTimestamp: Date.now(),
       })
       .then(
         () => {
