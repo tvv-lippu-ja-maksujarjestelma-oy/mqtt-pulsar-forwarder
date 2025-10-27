@@ -48,7 +48,7 @@
   "dependencies": {
     "async-mqtt": "^2.6.3",
     "pino": "^8.16.2",
-    "pulsar-client": "^1.14.0"
+    "pulsar-client": "^1.15.0"
   },
   "jest": {
     "testPathIgnorePatterns": [
