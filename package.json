@@ -30,7 +30,7 @@
   "devDependencies": {
     "@tsconfig/strictest": "^2.0.8",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.1.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.0",
@@ -40,15 +40,15 @@
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jest": "^28.14.0",
-    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-prettier": "^5.5.6",
     "jest": "^30.0.0",
-    "prettier": "^3.8.3",
+    "prettier": "^3.9.4",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "async-mqtt": "^2.6.3",
     "pino": "^8.16.2",
-    "pulsar-client": "^1.17.0"
+    "pulsar-client": "^1.18.0"
   },
   "jest": {
     "testPathIgnorePatterns": [
