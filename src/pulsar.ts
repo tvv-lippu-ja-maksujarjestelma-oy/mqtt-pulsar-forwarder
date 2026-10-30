@@ -20,6 +20,5 @@ export const createPulsarProducer = async (
   { producerConfig }: PulsarConfig,
 ) => {
   // There is a try-catch where this function is called.
-  // eslint-disable-next-line @typescript-eslint/return-await
   return await client.createProducer(producerConfig);
 };
